@@ -10,19 +10,6 @@ from fastapi.responses import JSONResponse
 
 app = FastAPI()
 
-# @app.post("/test")
-# async def upload_audio(file: UploadFile = File(...)):
-#     contents = await file.read()
-#
-#     file_info = {
-#         "filename": file.filename,
-#         "content_type": file.content_type,
-#         "file_size_bytes": len(contents)
-#     }
-#
-#     return JSONResponse(content=file_info)
-
-
 @app.post("/audio-similarity")
 async def audio_similarity(file: UploadFile = File(...)):
     contents = await file.read()
