@@ -1,0 +1,5 @@
+fastapi[standard]
+matplotlib
+librosa
+numpy
+audio-similarity==1.0.0
