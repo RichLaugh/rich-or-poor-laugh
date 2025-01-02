@@ -3,8 +3,6 @@ services:
   web:
     build: .
     container_name: richlaugh_backend
-    ports:
-      - 8000:8000
     restart: unless-stopped
     volumes:
       - /mnt/data/laughter:/mnt/d/data_44k/laughter
