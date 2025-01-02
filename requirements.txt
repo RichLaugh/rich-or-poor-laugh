@@ -1,5 +1,8 @@
 fastapi[standard]
-matplotlib
-librosa
-numpy
 audio-similarity==1.0.0
+sqlalchemy
+passlib[bcrypt]
+python-jose
+python-multipart
+psycopg2-binary
+python-dotenv
