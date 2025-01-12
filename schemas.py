@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Optional
 
 class UserCreate(BaseModel):
     username: str
@@ -20,4 +21,21 @@ class TokenData(BaseModel):
 
 class AudioCreate(BaseModel):
     name: str
-    category: str
+    category: Optional[str]
+
+class CategoryBase(BaseModel):
+    name: str
+    label: Optional[str]
+    color: Optional[str]
+    description: Optional[str]
+
+class CategoryCreate(CategoryBase):
+    pass
+
+class CategoryRead(CategoryBase):
+    id: int
+    audio_count: int
+    pass
+
+    class Config:
+        from_attributes = True
