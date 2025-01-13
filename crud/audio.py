@@ -34,8 +34,9 @@ def get_audio_list(db: Session, category: str) -> list[Type[Audio]]:
 
 def update_audio(db: Session, audio_name: str, audio: AudioCreate) -> Type[Audio] | None:
     db_audio = db.query(Audio).filter(Audio.name == audio_name).first()
-    if db_audio:
-        db_audio.category = audio.category
-        db.commit()
-        db.refresh(db_audio)
+    if db_audio is None:
+        return None
+    db_audio.category = audio.category
+    db.commit()
+    db.refresh(db_audio)
     return db_audio

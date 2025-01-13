@@ -2,7 +2,7 @@ import os
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
-from crud.audio import get_audio_list
+from crud.audio import get_audio_list, update_audio
 from models import User, Audio, get_db
 from routes.user import get_current_user
 from schemas import AudioCreate
@@ -30,11 +30,4 @@ async def audio_list(db: Session = Depends(get_db),
 
 @router.post("/mark")
 def mark(audio: AudioCreate, db: Session = Depends(get_db)):
-    new_audio = Audio(
-        name=audio.name,
-        category=audio.category,
-    )
-    db.add(new_audio)
-    db.commit()
-    db.refresh(new_audio)
-    return new_audio
+    return update_audio(db, audio.name, audio)
