@@ -29,7 +29,7 @@ async def audio_list(db: Session = Depends(get_db),
     return results
 
 @router.post("/mark")
-def mark(audio: AudioCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def mark(audio: AudioCreate, db: Session = Depends(get_db)):
     new_audio = Audio(
         name=audio.name,
         category=audio.category,
