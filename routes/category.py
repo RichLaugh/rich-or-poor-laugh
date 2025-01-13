@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 from crud.category import get_categories, create_category
 from models import get_db, Audio, Category
@@ -15,7 +16,10 @@ async def read_categories(db: Session = Depends(get_db)):
     result = []
     for category in categories:
         if category.name == 'unsorted':
-            audio_count = db.query(func.count(Audio.id)).filter(Audio.category == category.name or Audio.category == None).scalar()
+            audio_count = db.query(func.count(Audio.id)).filter(or_(
+        Audio.category == None,
+        Audio.category == "unsorted"
+    )).scalar()
         else:
             audio_count = db.query(func.count(Audio.id)).filter(Audio.category == category.name).scalar()
         category_dict = category.__dict__  # Convert SQLAlchemy model to dict

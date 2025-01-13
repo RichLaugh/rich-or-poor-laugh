@@ -1,6 +1,9 @@
 from typing import Type
 
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
+from sqlalchemy.sql.sqltypes import NullType
+
 from models import Audio
 from schemas import AudioCreate
 
@@ -17,11 +20,16 @@ def create_audio(db: Session, audio: AudioCreate) -> Audio:
 def get_audio_list(db: Session, category: str) -> list[Type[Audio]]:
     audioDb = db.query(Audio)
     if category is not None:
-        audioDb = audioDb.filter(Audio.category == category)
+        if category == "unsorted":
+            audioDb = audioDb.filter(or_(
+                Audio.category == None,
+                Audio.category == category
+            ))
+        else:
+            audioDb = audioDb.filter(Audio.category == category)
     else:
         audioDb = audioDb.filter(Audio.category == None)
-    if category == "unsorted":
-        audioDb = audioDb.filter(Audio.category == None or Audio.category == "unsorted")
+
     return audioDb.all()
 
 def update_audio(db: Session, audio_name: str, audio: AudioCreate) -> Type[Audio] | None:
