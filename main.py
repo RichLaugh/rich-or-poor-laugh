@@ -36,8 +36,8 @@ app.include_router(audio.router, prefix="/audio", tags=["[DataMapper] Audio"])
 
 @app.get("/", tags=["App"])
 def root():
-    a = "a"
-    b = "b2" + a
+    a = " world"
+    b = "hello" + a
     return {"hello world": b}
 @app.post("/audio-similarity", tags=["App"])
 async def audio_similarity(file: UploadFile = File(...)):
@@ -72,7 +72,7 @@ async def audio_similarity(file: UploadFile = File(...)):
 
     return {
         "similarity_score": similarity_score,
-        "normalized_similarity_score":normalized_similarity_score,
+        # "normalized_similarity_score":normalized_similarity_score,
     }
 
 if __name__ == "__main__":
