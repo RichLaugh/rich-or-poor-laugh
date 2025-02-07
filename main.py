@@ -10,6 +10,11 @@ from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 import logging
 from routes import user, category, audio
+from model.model import predict_class
+from fastapi.responses import JSONResponse
+import json
+import numpy as np
+import random
 
 load_dotenv()
 
@@ -34,11 +39,18 @@ app.include_router(user.router, tags=["[DataMapper] User"])
 app.include_router(category.router, prefix="/categories", tags=["[DataMapper] Category"])
 app.include_router(audio.router, prefix="/audio", tags=["[DataMapper] Audio"])
 
+class NumpyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.generic):
+            return obj.item()
+        return super(NumpyEncoder, self).default(obj)
+
 @app.get("/", tags=["App"])
 def root():
     a = " world"
     b = "hello" + a
     return {"hello world": b}
+
 @app.post("/audio-similarity", tags=["App"])
 async def audio_similarity(file: UploadFile = File(...)):
     contents = await file.read()
@@ -60,20 +72,37 @@ async def audio_similarity(file: UploadFile = File(...)):
         'perceptual_similarity': 0.25
     }
 
-    audio_similarity = AudioSimilarity(original_path, compare_path, sample_rate, weights, True, 1)
+    # audio_similarity = AudioSimilarity(original_path, compare_path, sample_rate, weights, True, 1)
 
-    similarity_score = audio_similarity.stent_weighted_audio_similarity(metrics='all')
+    # similarity_score = audio_similarity.stent_weighted_audio_similarity(metrics='all')
 
-    normalized_similarity_score = (
-            0.4 * similarity_score['rhythm_similarity'] +
-            0.4 * similarity_score['energy_envelope_similarity'] +
-            0.2 * similarity_score['perceptual_similarity']
-    )
+    # normalized_similarity_score = (
+    #         0.4 * similarity_score['rhythm_similarity'] +
+    #         0.4 * similarity_score['energy_envelope_similarity'] +
+    #         0.2 * similarity_score['perceptual_similarity']
+    # )
+
+    predicted = predict_class(tmp_file_path)
+    rounded_data = {k: round(float(v), 2) for k, v in predicted.items()}
+    print(rounded_data)
+    if (max(rounded_data.values()) == rounded_data['rich']):
+        if (rounded_data['rich'] > 0.75):
+            swass = rounded_data['rich']
+        else:
+            swass = random.uniform(0.65, 0.75)
+    else:
+        if (max(rounded_data.values()) == rounded_data['poor']):
+            swass = rounded_data['rich']
+        else:
+            swass = random.uniform(0.65, 0.75)
 
     return {
-        "similarity_score": similarity_score,
-        # "normalized_similarity_score":normalized_similarity_score,
+        "predicted": rounded_data,
+        "similarity_score": {
+            "swass": swass
+        }
     }
+
 
 if __name__ == "__main__":
     import uvicorn

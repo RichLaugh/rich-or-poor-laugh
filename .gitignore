@@ -7,6 +7,7 @@ __pycache__/
 *.so
 
 # Distribution / packaging
+.vscode/
 .idea/
 .Python
 build/
@@ -171,3 +172,9 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 *.pyc
+
+/model/audio
+/model/saved_data
+/model/test
+/model/audio.csv
+/model/models/*.npz

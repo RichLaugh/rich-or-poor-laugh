@@ -1,3 +1,7 @@
 .git/
 .idea/
 venv/
+/model/audio
+/model/saved_data
+/model/test
+/model/audio.csv
