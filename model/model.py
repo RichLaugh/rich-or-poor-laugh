@@ -77,45 +77,7 @@ def load_data(data_path, sr=16000, duration=5):
     y = np.array(y)
     return X, y, classes
 
-# кешируем что б каждий раз не обрабатывать данные надо чистить если меняется содержимое папки audio
 current_dir = os.path.dirname(os.path.abspath(__file__))
-data_path = os.path.join(current_dir,'audio')
-data_path_classes = os.path.join(current_dir,'models') +'/'+'_'.join(classes)+'.npz'
-if (os.path.exists(data_path_classes)):
-    data = np.load(data_path_classes, allow_pickle=True)
-    X = data['X']
-    y = data['y']
-    class_names = data['class_names']
-else:
-    X, y, class_names = load_data(data_path)
-    np.savez(data_path_classes, X=X, y=y, class_names=class_names)
-
-X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.1, random_state=42)
-
-X_train = X_train[..., np.newaxis]  # (кол-во образцов, частотные полосы, временные фреймы, 1)
-X_val = X_val[..., np.newaxis]
-
-early_stop = EarlyStopping(
-    monitor='val_accuracy',
-    patience=10,
-    restore_best_weights=True,
-    verbose=1
-)
-
-model_1_checkpoint = ModelCheckpoint(
-    filepath=os.path.join(current_dir,'models') +'/'+'_'.join(classes)+'.keras',
-    monitor='val_accuracy',
-    save_best_only=True,
-    mode='max',
-    verbose=1
-)
-
-if (os.path.exists(os.path.join(current_dir,'models') +'/'+'_'.join(classes)+'.keras')):
-    model1 = load_model(os.path.join(current_dir,'models') +'/'+'_'.join(classes)+'.keras')
-else:
-    model1 = build_model_cnn(X_train.shape[1:], len(class_names))
-    model1.fit(X_train, y_train, validation_data=(X_val, y_val), epochs=100, callbacks=[early_stop, model_1_checkpoint])
-
 sr = 16000
 duration = 5
 n_mels = 64
@@ -135,26 +97,6 @@ def softmax(x):
     exp_x = np.exp(x - np.max(x))
     return exp_x / exp_x.sum(axis=-1, keepdims=True)
 
-# for fname in os.listdir(os.path.join(current_dir,'test')):
-#             if not fname.endswith('.wav'):
-#                 continue
-#             fpath = os.path.join(os.path.join(current_dir,'test'), fname)
-
-#             test_melspec = audio_to_melspec_db(fpath)
-
-#             # Добавляем оси: первая — batch=1, последняя — канал=1
-#             test_melspec = test_melspec[np.newaxis, ..., np.newaxis]  # shape (1, 64, time, 1)
-
-#             # Предсказание
-#             pred1 = model1.predict(test_melspec)  # shape (1, num_classes)
-#             predicted_class_id_1 = np.argmax(pred1, axis=-1)[0]
-            
-#             probabilities = softmax(pred1)
-#             percentages = probabilities[0]
-
-#             print({classes[class_id]:percent for class_id, percent in enumerate(percentages)})
-#             print(fname, "Class ID:", classes[predicted_class_id_1])
-
 def predict_class(audio_path):
     test_melspec = audio_to_melspec_db(audio_path)
     test_melspec = test_melspec[np.newaxis, ..., np.newaxis]  # shape (1, 64, time, 1)
@@ -165,3 +107,42 @@ def predict_class(audio_path):
     percentages = pred[0]
 
     return {classes[class_id]:percent for class_id, percent in enumerate(percentages)}
+
+if __name__ == "__main__":
+    # кешируем что б каждий раз не обрабатывать данные надо чистить если меняется содержимое папки audio
+    data_path = os.path.join(current_dir,'audio')
+    data_path_classes = os.path.join(current_dir,'models') +'/'+'_'.join(classes)+'.npz'
+    if (os.path.exists(data_path_classes)):
+        data = np.load(data_path_classes, allow_pickle=True)
+        X = data['X']
+        y = data['y']
+        class_names = data['class_names']
+    else:
+        X, y, class_names = load_data(data_path)
+        np.savez(data_path_classes, X=X, y=y, class_names=class_names)
+
+    X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.1, random_state=42)
+
+    X_train = X_train[..., np.newaxis]  # (кол-во образцов, частотные полосы, временные фреймы, 1)
+    X_val = X_val[..., np.newaxis]
+
+    early_stop = EarlyStopping(
+        monitor='val_accuracy',
+        patience=10,
+        restore_best_weights=True,
+        verbose=1
+    )
+
+    model_1_checkpoint = ModelCheckpoint(
+        filepath=os.path.join(current_dir,'models') +'/'+'_'.join(classes)+'.keras',
+        monitor='val_accuracy',
+        save_best_only=True,
+        mode='max',
+        verbose=1
+    )
+
+    if (os.path.exists(os.path.join(current_dir,'models') +'/'+'_'.join(classes)+'.keras')):
+        model1 = load_model(os.path.join(current_dir,'models') +'/'+'_'.join(classes)+'.keras')
+    else:
+        model1 = build_model_cnn(X_train.shape[1:], len(class_names))
+        model1.fit(X_train, y_train, validation_data=(X_val, y_val), epochs=100, callbacks=[early_stop, model_1_checkpoint])
